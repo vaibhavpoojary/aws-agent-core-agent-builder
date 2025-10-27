@@ -1,0 +1,40 @@
+name: Deploy Agent Without Makefile
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: 📦 Package agent
+        run: |
+          mkdir -p dist
+          python src/utils/package_agent.py --agent-path src/agents/claude_chatbot --output dist/claude_chatbot.tar.gz
+
+      - name: 📝 Register in MLflow
+        run: |
+          python src/utils/mlflow_utils.py \
+            --agent-name claude_chatbot \
+            --artifact-path dist/claude_chatbot.tar.gz \
+            --mlflow-uri http://
+
+      - name: 🚀 Deploy agent
+        run: |
+          agentcore configure --entrypoint src/agents/claude_chatbot/entrypoint.py --name claude_chatbot
+          agentcore launch
+
+      - name: 🧹 Clean artifacts
+        run: rm -rf dist/*

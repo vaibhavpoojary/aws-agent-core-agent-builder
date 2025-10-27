@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+boto3
+mlflow
+requests
+pydantic
+pytest
+strands-agents
+bedrock-agentcore-starter-toolkit
+agentcore
+pandas
+langgraph
+python-dotenv
+langchain
